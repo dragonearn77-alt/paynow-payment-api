@@ -1,0 +1,19 @@
+services:
+  # 🏪 金流櫃檯服務
+  web:
+    build: .
+    platform: linux/amd64 # 🎯 強制指定這個貨櫃必須用 Intel (amd64) 格式運行
+    ports:
+      - "5275:5275"
+    depends_on:
+      - db
+
+  # 🏦 地下保險箱（MS SQL）服務
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64 # 🎯 資料庫也強制對齊 Intel 架構
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=PayNowPassword999
+    ports:
+      - "1433:1433"

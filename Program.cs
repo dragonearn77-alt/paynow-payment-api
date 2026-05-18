@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // 🔌 連接 MS SQL 資料庫設定
-var connectionString = "Server=localhost,1433;Database=PayNowDB;User Id=sa;Password=PayNowPassword999;TrustServerCertificate=True;";
+var connectionString = "Server=db,1433;Database=PayNowDB;User Id=sa;Password=PayNowPassword999;TrustServerCertificate=True;";
 builder.Services.AddDbContext<PayNowDbContext>(options => options.UseSqlServer(connectionString));
 
 var app = builder.Build();
