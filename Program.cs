@@ -15,21 +15,36 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
-// ----------------------------------------------------
-// 🎯 ✨ 【全新功能】加裝 GET API：調閱歷史紀錄帳本
-// ----------------------------------------------------
+// 🎯 功能一：調閱「整本」歷史紀錄帳本
 app.MapGet("/api/history", async (PayNowDbContext db) => 
 {
-    // 🧙‍♂️ EF Core 翻譯官出動：
-    // 這行 C# 會被自動翻譯成 SQL 語法：「SELECT * FROM PaymentOrders;」
-    // 它會去資料庫把整張表格挖出來，並變成一個 C# 的清單（List）
     var 歷史紀錄 = await db.PaymentOrders.ToListAsync();
-    
-    // 把整本帳本轉成 JSON 格式回傳給瀏覽器
     return Results.Ok(歷史紀錄);
 });
 
-// 🎯 POST API：刷卡扣款
+// ----------------------------------------------------
+// 🎯 ✨ 【全新功能】依單號查詢特定某一筆訂單
+// 網址裡面的 {id:int} 代表：「這裡會傳進一個整數，請幫我把它抓出來當成變數 id」
+// ----------------------------------------------------
+app.MapGet("/api/history/{id:int}", async (int id, PayNowDbContext db) => 
+{
+    // 🧙‍♂️ EF Core 翻譯官再次出動：
+    // FindAsync(id) 會被自動翻譯成：「SELECT * FROM PaymentOrders WHERE Id = id;」
+    // 它會直接去主鍵（Primary Key）欄位精準搜索
+    var 訂單 = await db.PaymentOrders.FindAsync(id);
+    
+    // 防禦性程式設計：萬一客人亂輸入一個根本不存在的單號（例如 9999）
+    if (訂單 == null)
+    {
+        // 回傳標準的 HTTP Status 404 (Not Found)
+        return Results.NotFound(new { 訊息 = $"查無此交易！找不到單號為 {id} 的訂單。" });
+    }
+    
+    // 如果找到了，就只回傳這筆特定訂單的 JSON 給瀏覽器
+    return Results.Ok(訂單);
+});
+
+// 🎯 功能三：刷卡扣款 (POST)
 app.MapPost("/api/pay", async (PaymentOrder 新訂單, PayNowDbContext db) => 
 {
     if (新訂單.Amount <= 0) 
