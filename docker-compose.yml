@@ -2,16 +2,19 @@ services:
   # 🏪 金流櫃檯服務
   web:
     build: .
-    platform: linux/amd64 # 🎯 強制指定這個貨櫃必須用 Intel (amd64) 格式運行
+    platform: linux/amd64
     ports:
       - "5275:5275"
     depends_on:
       - db
+    # 🎯 透過環境變數，在開機瞬間把真正的「生產密碼與對內伺服器地址 (db)」強力注入！
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db,1433;Database=PayNowDB;User Id=sa;Password=PayNowPassword999;TrustServerCertificate=True;
 
   # 🏦 地下保險箱（MS SQL）服務
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    platform: linux/amd64 # 🎯 資料庫也強制對齊 Intel 架構
+    platform: linux/amd64
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=PayNowPassword999
