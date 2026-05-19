@@ -7,10 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<PayNowDbContext>(options => options.UseSqlServer(connectionString));
 
+// 🎯 媒合魔法：當有人要介面（合約），就派發右邊的實體管理員過去
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 // 2. 🏗️ 核心關鍵：告訴 .NET 引擎，我們這次要啟用專業的 Controllers 掃描機制！
 builder.Services.AddControllers();
 
 var app = builder.Build();
+// 🎯 【加裝全域防護罩】：強迫所有請求與回傳，通通都要經過 ExceptionHandlingMiddleware 的眼線！
+app.UseMiddleware<asp_csharp.Middlewares.ExceptionHandlingMiddleware>();
 
 // 3. 🏗️ 自動蓋大樓魔法
 using (var scope = app.Services.CreateScope())
